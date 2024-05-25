@@ -59,7 +59,10 @@ function party(x: Xml, wrapper: string, p: Party | null, name: string | null) {
     x.open("cac:PartyTaxScheme").leaf("cbc:CompanyID", p.trn).open("cac:TaxScheme").leaf("cbc:ID", "VAT").close("cac:TaxScheme").close("cac:PartyTaxScheme");
   }
   x.open("cac:PartyLegalEntity").leaf("cbc:RegistrationName", name);
-  if (p?.legal_id) x.leaf("cbc:CompanyID", p.legal_id, { schemeAgencyID: p.legal_id_type ?? "" });
+  // IBR-172-AE and IBR-101-AE: TL identifiers carry their issuing authority.
+  if (p?.legal_id) x.leaf("cbc:CompanyID", p.legal_id, {
+    schemeAgencyID: p.legal_id_type ?? "", schemeAgencyName: p.legal_id_type === "TL" ? p.legal_id_authority ?? "" : "",
+  });
   x.close("cac:PartyLegalEntity").close("cac:Party").close(`cac:${wrapper}`);
 }
 
@@ -75,10 +78,20 @@ export function toUbl(c: Computed): string {
     .leaf("cbc:IssueDate", d.issue_date)
     .leaf("cbc:DueDate", d.due_date)
     .leaf("cbc:InvoiceTypeCode", d.type_code)
-    .leaf("cbc:DocumentCurrencyCode", cur)
-    .leaf("cbc:BuyerReference", d.customer_po);
+    .leaf("cbc:DocumentCurrencyCode", cur);
+  // IBT-013: the buyer's purchase order belongs in OrderReference.
+  if (d.customer_po) x.open("cac:OrderReference").leaf("cbc:ID", d.customer_po).close("cac:OrderReference");
   party(x, "AccountingSupplierParty", c.seller, c.seller.name);
   party(x, "AccountingCustomerParty", c.buyer, c.buyer?.name ?? null);
+  // IBR-152-AE: serialize the export delivery address.
+  if (d.delivery) {
+    x.open("cac:Delivery").open("cac:DeliveryLocation").open("cac:Address")
+      .leaf("cbc:StreetName", d.delivery.address_line)
+      .leaf("cbc:CityName", d.delivery.city)
+      .leaf("cbc:CountrySubentity", d.delivery.subdivision)
+      .open("cac:Country").leaf("cbc:IdentificationCode", d.delivery.country).close("cac:Country")
+      .close("cac:Address").close("cac:DeliveryLocation").close("cac:Delivery");
+  }
   if (d.payment_means) x.open("cac:PaymentMeans").leaf("cbc:PaymentMeansCode", d.payment_means).close("cac:PaymentMeans");
   x.open("cac:TaxTotal").leaf("cbc:TaxAmount", amount(c.tax_total), { currencyID: cur });
   for (const g of c.subtotals) {

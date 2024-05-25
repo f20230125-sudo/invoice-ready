@@ -20,12 +20,14 @@ come from master data, not from the invoice: one wrong customer record holds eve
 - **Checks every draft invoice against the 51 mandatory fields** of a UAE electronic tax invoice, in the order and
   wording of the Ministry of Finance's list ("UAE Electronic Invoice Mandatory Fields", version 1.0, 23 February
   2026), each tied to its PINT AE business term and UBL element.
-- **Checks the codes and the arithmetic:** TRN of 15 digits starting 100, the electronic address as the TIN (the
+- **Checks the codes and the arithmetic:** TRN of 15 digits starting 100 and ending 03 (IBR-132-AE), the electronic address as the TIN (the
   TRN's first 10 digits) under scheme 0235, invoice type 380 or 480, the 8-position transaction type, tax
   categories S, Z, E, O, AE, N with the standard rate at 5%, real dates with payment not due before issue, and an
-  export flagged invoice that still charges VAT.
+  export flagged invoice that still charges VAT. UAE addresses use emirate codes, trade licences require an
+  issuing authority, and exports require an overseas delivery address. Payment and country codes are checked
+  against the PINT AE lists; type 480 only permits E, O or Z. Exempt lines (E) are held until supported.
 - **Says what to fix and where**, in one sentence: on the invoice, in the customer record, or in our company record.
-  "Customer TRN 10031174020003 has 14 digits; a TRN has 15 and starts with 100."
+  "Customer TRN 10031174020003 has 14 digits; a TRN has 15 digits, starts with 100 and ends in 03."
 - **Puts customer records first.** Fix a record on the page and every invoice it held is released (kept in your
   browser only).
 - **Writes the PINT AE XML** (UBL 2.1) and **reads it back** the way a receiving system would: every mandatory field
@@ -46,7 +48,7 @@ come from master data, not from the invoice: one wrong customer record holds eve
 **Checked, not assumed:** the specification identifier `urn:peppol:pint:billing-1@ae-1` comes from the PINT AE
 document type identifier. The business process value `urn:peppol:bis:billing` is the Peppol billing process; I
 did not find it stated on the PINT AE pages, so confirm it against the official example files before production
-use. The country subdivision is written as the emirate's name; PINT AE may expect a code.
+use. UAE country subdivisions use the emirate codes required by PINT AE rule IBR-128-AE.
 
 ## How it is built
 
@@ -57,26 +59,28 @@ TypeScript, React and Vite, no server: everything runs in the browser.
 - [`src/lib/validate.ts`](src/lib/validate.ts): presence, formats, codes and line rules, each finding one sentence
   with where to fix it.
 - [`src/lib/money.ts`](src/lib/money.ts), [`compute.ts`](src/lib/compute.ts): all amounts in whole fils, so sums never
-  pick up floating-point dust; VAT per category on the category total.
+  pick up floating-point dust; fractional line nets round to fils, VAT per category on the category total, and
+  reverse-charge VAT contributes zero to the amount due.
 - [`src/lib/ubl.ts`](src/lib/ubl.ts), [`readback.ts`](src/lib/readback.ts): write the UBL XML, parse it back, find every
   field by its path and recompute the totals.
 - Sample data: [`tools/export_samples.py`](tools/export_samples.py) turns Order Desk's synthetic delivered orders into
   14 draft invoices, with two realistic gaps in the customer file (a TRN with a digit missing, an address with no
-  city) and one zero-rated export.
+  city) and one zero-rated export to an overseas warehouse.
 
 ## Run it
 
 ```bash
 npm ci
 npm run dev          # http://127.0.0.1:5190
-npm test             # 16 unit tests: money, the field list, every rule, XML read-back
-npm run e2e          # 5 browser tests, with axe accessibility checks in light and dark
+npm test             # 38 unit tests: money, the field list, VAT and code rules, XML read-back
+npm run e2e          # 6 browser tests, with axe accessibility checks in light and dark
 ```
 
 ## Limits
 
 - Tax invoices only (the 51-field list); the 49-field commercial invoice and credit notes are not covered.
 - One tax category per invoice is shown in the checklist; the XML writes every category.
+- Exempt lines (E) are held: exemption reason codes and category-specific XML are not supported yet.
 - No document-level allowances or charges, no prepayments, invoices in AED.
 - It checks readiness and writes the file; sending goes through an accredited service provider, which this is not.
 - Synthetic data only.
