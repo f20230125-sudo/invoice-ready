@@ -1,5 +1,5 @@
 import { DOMParser } from "@xmldom/xmldom";
-import { FIELDS } from "./fields";
+import { FIELDS, requiredField } from "./fields";
 import { toFils } from "./money";
 
 // Read the generated XML back, as a receiving system would: every mandatory field must be found at its UBL
@@ -36,7 +36,11 @@ export function readBack(xml: string): Readback {
   const lines = children(root, "InvoiceLine");
   for (const f of FIELDS) {
     if (f.section === "Invoice line") {
-      lines.forEach((l, i) => at(l, f.path).length === 0 && missing.push({ n: f.n, name: f.name, line: i + 1 }));
+      lines.forEach((l, i) => requiredField(f.n, at(l, "Item/ClassifiedTaxCategory/ID")[0]) && at(l, f.path).length === 0 && missing.push({ n: f.n, name: f.name, line: i + 1 }));
+    } else if (f.n === 38) {
+      // ALIGNED-IBRP-O-11-AE: require a rate for each applicable breakdown, including mixed invoices.
+      const subtotals = children(root, "TaxTotal").flatMap((t) => children(t, "TaxSubtotal"));
+      if (subtotals.length === 0 || subtotals.some((g) => requiredField(38, at(g, "TaxCategory/ID")[0]) && at(g, "TaxCategory/Percent").length === 0)) missing.push({ n: f.n, name: f.name });
     } else if (at(root, f.path).length === 0) {
       missing.push({ n: f.n, name: f.name });
     }

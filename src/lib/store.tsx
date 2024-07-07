@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import samplesJson from "../data/samples.json";
 import { compute, type Computed } from "./compute";
 import type { Customer, Samples } from "./types";
@@ -23,18 +23,25 @@ interface Store {
   original: (code: string) => Customer | undefined;
 }
 
-function load(): Record<string, Partial<Customer>> {
+function load(fallback: Record<string, Partial<Customer>> = {}): Record<string, Partial<Customer>> {
   try {
     return JSON.parse(localStorage.getItem(KEY) ?? "{}");
   } catch {
-    return {};
+    return fallback;
   }
 }
 
 const Ctx = createContext<Store | null>(null);
 
 export function StoreProvider({ children }: { children: ReactNode }) {
-  const [fixed, setFixed] = useState(load);
+  const [fixed, setFixed] = useState(() => load());
+  useEffect(() => {
+    const sync = (e: StorageEvent) => {
+      if (e.key === KEY || e.key === null) setFixed((previous) => load(previous));
+    };
+    window.addEventListener("storage", sync);
+    return () => window.removeEventListener("storage", sync);
+  }, []);
   const save = (next: Record<string, Partial<Customer>>) => {
     setFixed(next);
     try {
@@ -53,7 +60,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     [customers],
   );
   const fixCustomer = useCallback((code: string, patch: Partial<Customer>) => {
-    const latest = { ...fixed, ...load() };
+    if (Object.keys(patch).length === 0) return;
+    // Persisted state is authoritative, including removals made by another tab.
+    const latest = load(fixed);
     save({ ...latest, [code]: { ...latest[code], ...patch } });
   }, [fixed]);
   const value: Store = {
