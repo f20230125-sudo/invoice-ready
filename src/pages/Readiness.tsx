@@ -13,6 +13,7 @@ function plural(n: number, one: string, many = `${one}s`) {
 
 function FixForm({ customer, onDone }: { customer: Customer; onDone: () => void }) {
   const { fixCustomer } = useStore();
+  const [original] = useState(customer);
   const [trn, setTrn] = useState(customer.trn ?? "");
   const [city, setCity] = useState(customer.city ?? "");
   return (
@@ -20,7 +21,11 @@ function FixForm({ customer, onDone }: { customer: Customer; onDone: () => void 
       className="fix"
       onSubmit={(e) => {
         e.preventDefault();
-        fixCustomer(customer.code, { trn: trn.trim() || null, city: city.trim() || null });
+        const patch: Partial<Customer> = {};
+        // Compare against the record when the form opened, even after another tab updates it.
+        if (trn.trim() !== (original.trn ?? "")) patch.trn = trn.trim() || null;
+        if (city.trim() !== (original.city ?? "")) patch.city = city.trim() || null;
+        fixCustomer(customer.code, patch);
         onDone();
       }}
     >

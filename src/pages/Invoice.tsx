@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router";
 import { PencilRing, PencilTick } from "../components/Marks";
-import { FIELDS, SECTIONS } from "../lib/fields";
+import { FIELDS, requiredField, SECTIONS } from "../lib/fields";
 import { show } from "../lib/money";
 import { readBack } from "../lib/readback";
 import { useStore } from "../lib/store";
@@ -45,6 +45,7 @@ export function Invoice() {
   };
   const valueOf = (n: number) => {
     const f = FIELDS[n - 1];
+    if (!requiredField(n, f.section === "Invoice line" ? c.lines[0]?.tax_category : c.subtotals[0]?.category)) return "Not applicable";
     return f.section === "Invoice line" ? (c.lines[0] ? f.value(c, c.lines[0]) : null) : f.value(c);
   };
 
@@ -142,7 +143,7 @@ export function Invoice() {
                     </td>
                     <td className="num">{show(l.price)}</td>
                     <td className="nowrap">
-                      {l.tax_category} {l.tax_rate}%
+                      {l.tax_category}{l.tax_category === "O" ? "" : ` ${l.tax_rate}%`}
                     </td>
                     <td className="num">{show(l.net)}</td>
                   </tr>
@@ -152,7 +153,7 @@ export function Invoice() {
                 {c.subtotals.map((g) => (
                   <tr key={g.category + g.rate}>
                     <th scope="row" colSpan={4}>
-                      VAT {g.category} at {g.rate}% on {show(g.taxable)}
+                      VAT {g.category}{g.category === "O" ? "" : ` at ${g.rate}%`} on {show(g.taxable)}
                     </th>
                     <td className="num">{show(g.tax)}</td>
                   </tr>
