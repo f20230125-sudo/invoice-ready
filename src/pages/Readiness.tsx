@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { PencilRing, PencilTick } from "../components/Marks";
 import { GO_LIVE, daysUntil, longDate } from "../lib/dates";
@@ -16,6 +16,10 @@ function FixForm({ customer, onDone }: { customer: Customer; onDone: () => void 
   const [original] = useState(customer);
   const [trn, setTrn] = useState(customer.trn ?? "");
   const [city, setCity] = useState(customer.city ?? "");
+  const firstInput = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    firstInput.current?.focus();
+  }, []);
   return (
     <form
       className="fix"
@@ -30,8 +34,20 @@ function FixForm({ customer, onDone }: { customer: Customer; onDone: () => void 
       }}
     >
       <label>
-        <span>TRN</span>
-        <input className="mono" value={trn} onChange={(e) => setTrn(e.target.value.replace(/\s/g, ""))} inputMode="numeric" maxLength={15} />
+        <span id={`trn-label-${customer.code}`}>TRN</span>
+        <input
+          ref={firstInput}
+          className="mono"
+          value={trn}
+          onChange={(e) => setTrn(e.target.value.replace(/\s/g, ""))}
+          inputMode="numeric"
+          maxLength={15}
+          aria-labelledby={`trn-label-${customer.code}`}
+          aria-describedby={`trn-help-${customer.code}`}
+        />
+        <span className="input-help" id={`trn-help-${customer.code}`}>
+          15 digits, starts with 1, ends in 03.
+        </span>
       </label>
       <label>
         <span>City</span>
@@ -51,6 +67,17 @@ export function Readiness() {
   const { checked, customers, fixed, resetFixes, original } = useStore();
   const navigate = useNavigate();
   const [fixing, setFixing] = useState<string | null>(null);
+  const returnFocus = useRef<string | null>(null);
+  // Restore focus after the record list updates, including when a corrected row disappears.
+  useEffect(() => {
+    const code = returnFocus.current;
+    if (!code) return;
+    returnFocus.current = null;
+    const target = document.getElementById(`fix-${code}`)
+      ?? document.querySelector<HTMLButtonElement>(".record-action")
+      ?? document.getElementById("inv-h");
+    target?.focus();
+  });
   useEffect(() => {
     document.title = "Invoice Ready";
   }, []);
@@ -77,21 +104,28 @@ export function Readiness() {
 
   return (
     <div className="page">
+      <p className="caption">Demo with sample invoices</p>
       <h1>E-invoice readiness</h1>
-      <p className="lede">
+      <p className="lede" role="status">
         {plural(checked.length, "draft invoice")}. {ready.length} {ready.length === 1 ? "is" : "are"} ready to send as UAE electronic invoices
         {held.length > 0 ? `; ${held.length} ${held.length === 1 ? "is" : "are"} held by ${plural(records.length, "customer record")} with gaps.` : "."}
       </p>
-      <p className="golive">
-        E-invoicing becomes mandatory on{" "}
-        {GO_LIVE.map((g, i) => (
-          <span key={g.date}>
-            <strong>{longDate(g.date)}</strong> for {g.who} ({daysUntil(g.date)} days)
-            {i < GO_LIVE.length - 2 ? ", " : i === GO_LIVE.length - 2 ? " and " : "."}
-          </span>
-        ))}{" "}
-        <span className="quiet">Ministerial Decision 244 of 2025.</span>
+      <p className="next-step">
+        {held.length > 0 ? "Start with the customer records below, then open an invoice to review its fields and XML." : "Open an invoice below to review its fields and download the XML."}
       </p>
+      <details className="deadlines">
+        <summary>E-invoicing deadlines</summary>
+        <p className="golive">
+          E-invoicing becomes mandatory on{" "}
+          {GO_LIVE.map((g, i) => (
+            <span key={g.date}>
+              <strong>{longDate(g.date)}</strong> for {g.who} ({daysUntil(g.date)} days)
+              {i < GO_LIVE.length - 2 ? ", " : i === GO_LIVE.length - 2 ? " and " : "."}
+            </span>
+          ))}{" "}
+          <span className="quiet">Ministerial Decision 244 of 2025.</span>
+        </p>
+      </details>
 
       {records.length > 0 && (
         <section aria-labelledby="records-h">
@@ -102,19 +136,28 @@ export function Readiness() {
               <li key={r.customer.code}>
                 <div className="record-head">
                   <PencilRing variant={r.customer.code.length}>{r.invoices}</PencilRing>
-                  <div>
-                    <strong>{r.customer.name}</strong> <span className="quiet">holds {plural(r.invoices, "invoice")}</span>
-                    {[...r.problems].map((p) => (
-                      <p key={p}>{p}</p>
-                    ))}
+                  <div className="record-content">
+                    <div>
+                      <strong>{r.customer.name}</strong> <span className="quiet">holds {plural(r.invoices, "invoice")}</span>
+                      {[...r.problems].map((p) => (
+                        <p key={p}>{p}</p>
+                      ))}
+                      {original(r.customer.code)?.trn !== r.customer.trn && <p className="quiet small">Changed in this browser.</p>}
+                    </div>
                     {fixing === r.customer.code ? (
-                      <FixForm customer={r.customer} onDone={() => setFixing(null)} />
+                      <FixForm
+                        key={r.customer.code}
+                        customer={r.customer}
+                        onDone={() => {
+                          returnFocus.current = r.customer.code;
+                          setFixing(null);
+                        }}
+                      />
                     ) : (
-                      <button type="button" className="button" onClick={() => setFixing(r.customer.code)}>
+                      <button id={`fix-${r.customer.code}`} type="button" className="button record-action" onClick={() => setFixing(r.customer.code)}>
                         Fix the record
                       </button>
                     )}
-                    {original(r.customer.code)?.trn !== r.customer.trn && <p className="quiet small">Changed in this browser.</p>}
                   </div>
                 </div>
               </li>
@@ -122,18 +165,30 @@ export function Readiness() {
           </ul>
         </section>
       )}
+      {held.length === 0 && checked.length > 0 && (
+        <p className="complete"><PencilTick /> No customer records need fixing. Every draft invoice is ready to review.</p>
+      )}
       {fixedCount > 0 && (
         <p className="quiet small">
           {plural(fixedCount, "customer record")} corrected in this browser.{" "}
-          <button type="button" className="link" onClick={resetFixes}>
+          <button
+            type="button"
+            className="link"
+            onClick={() => {
+              returnFocus.current = "reset";
+              resetFixes();
+            }}
+          >
             Undo the corrections
           </button>
         </p>
       )}
 
       <section aria-labelledby="inv-h">
-        <h2 id="inv-h">Invoices</h2>
-        <table className="pad">
+        <h2 id="inv-h" tabIndex={-1}>
+          Invoices <span className="count">{checked.length}</span>
+        </h2>
+        <table className="pad invoice-list">
           <caption className="visually-hidden">Draft invoices with how many of the 51 mandatory fields they carry, and their first problem.</caption>
           <thead>
             <tr>
@@ -170,12 +225,24 @@ export function Readiness() {
                     <span className="sub">PO {c.draft.customer_po}</span>
                   </th>
                   <td>
-                    {c.buyer?.name}
-                    {c.draft.transaction_flags[7] === "1" && <span className="sub">Export, zero-rated</span>}
+                    <span className="mobile-label" aria-hidden="true">Customer</span>
+                    <div>
+                      {c.buyer?.name}
+                      {c.draft.transaction_flags[7] === "1" && <span className="sub">Export, zero-rated</span>}
+                    </div>
                   </td>
-                  <td className="num">{show(c.payable)}</td>
-                  <td>{okFields} of 51</td>
-                  <td>{findings[0]?.message ?? <span className="quiet">None</span>}</td>
+                  <td className="num">
+                    <span className="mobile-label" aria-hidden="true">Total AED</span>
+                    {show(c.payable)}
+                  </td>
+                  <td>
+                    <span className="mobile-label" aria-hidden="true">Fields</span>
+                    {okFields} of 51
+                  </td>
+                  <td>
+                    <span className="mobile-label" aria-hidden="true">First problem</span>
+                    <span>{findings[0]?.message ?? <span className="quiet">None</span>}</span>
+                  </td>
                 </tr>
               );
             })}
