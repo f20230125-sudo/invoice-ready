@@ -1,0 +1,664 @@
+{
+ "seller": {
+  "name": "Keystone Data Systems FZ-LLC",
+  "trn": "100458213900003",
+  "legal_id": "DIC-104582",
+  "legal_id_type": "TL",
+  "address_line": "Office 214, Building 9, Dubai Internet City",
+  "city": "Dubai",
+  "subdivision": "Dubai",
+  "country": "AE"
+ },
+ "customers": [
+  {
+   "code": "AWMS",
+   "name": "Al Waha Municipal Services",
+   "trn": "10031174020003",
+   "sector": "government",
+   "address_line": "Municipality Complex, Sheikh Rashid Street",
+   "city": "Ajman",
+   "subdivision": "Ajman",
+   "country": "AE",
+   "legal_id": null,
+   "legal_id_type": null
+  },
+  {
+   "code": "SPA",
+   "name": "Sahil Ports Authority",
+   "trn": "100527904800003",
+   "sector": "government",
+   "address_line": "Marine Building 2, Port Road",
+   "city": "Fujairah",
+   "subdivision": "Fujairah",
+   "country": "AE",
+   "legal_id": "CD-2019-1147",
+   "legal_id_type": "CD"
+  },
+  {
+   "code": "GCB",
+   "name": "Gulf Crescent Bank",
+   "trn": "100274611900003",
+   "sector": "bank",
+   "address_line": "Crescent Tower, Al Maryah Island",
+   "city": "Abu Dhabi",
+   "subdivision": "Abu Dhabi",
+   "country": "AE",
+   "legal_id": "TL-704512",
+   "legal_id_type": "TL"
+  },
+  {
+   "code": "MCB",
+   "name": "Marjan Commercial Bank",
+   "trn": "100690332100003",
+   "sector": "bank",
+   "address_line": "Level 18, Marjan Business Tower, Business Bay",
+   "city": "Dubai",
+   "subdivision": "Dubai",
+   "country": "AE",
+   "legal_id": "TL-611903",
+   "legal_id_type": "TL"
+  },
+  {
+   "code": "SPAC",
+   "name": "Seven Palms Academy",
+   "trn": "100845120700003",
+   "sector": "education",
+   "address_line": "Academic Block A, Al Rahmaniya 3",
+   "city": null,
+   "subdivision": "Sharjah",
+   "country": "AE",
+   "legal_id": null,
+   "legal_id_type": null
+  },
+  {
+   "code": "BAIS",
+   "name": "Bayt Al Ilm Schools",
+   "trn": "100163008400003",
+   "sector": "education",
+   "address_line": "Central Office, Al Qusais 2",
+   "city": "Dubai",
+   "subdivision": "Dubai",
+   "country": "AE",
+   "legal_id": "TL-882104",
+   "legal_id_type": "TL"
+  },
+  {
+   "code": "DMC",
+   "name": "Darat Medical Centre",
+   "trn": "100902774500003",
+   "sector": "healthcare",
+   "address_line": "Medical District, Khalifa City",
+   "city": "Abu Dhabi",
+   "subdivision": "Abu Dhabi",
+   "country": "AE",
+   "legal_id": "TL-905517",
+   "legal_id_type": "TL"
+  },
+  {
+   "code": "QLG",
+   "name": "Qasr Logistics Group",
+   "trn": "100735019600003",
+   "sector": "enterprise",
+   "address_line": "Warehouse 12, Jebel Ali Free Zone South",
+   "city": "Dubai",
+   "subdivision": "Dubai",
+   "country": "AE",
+   "legal_id": "TL-447210",
+   "legal_id_type": "TL"
+  }
+ ],
+ "invoices": [
+  {
+   "id": "INV-2026-0001",
+   "issue_date": "2026-10-20",
+   "due_date": "2026-11-19",
+   "currency": "AED",
+   "customer": "GCB",
+   "customer_po": "GCB-PO-301493",
+   "type_code": "380",
+   "transaction_flags": "00000000",
+   "payment_means": "30",
+   "lines": [
+    {
+     "part_number": "QLE2772-HBA",
+     "name": "QLogic QLE2772 32Gb dual-port Fibre Channel HBA",
+     "description": "QLogic QLE2772 32Gb dual-port Fibre Channel HBA",
+     "qty": 4,
+     "unit_price": "3615.00",
+     "unit_code": "H87",
+     "tax_category": "S",
+     "tax_rate": "5"
+    },
+    {
+     "part_number": "PER760-XS2",
+     "name": "PowerEdge R760 2U server",
+     "description": "PowerEdge R760 2U server, 2x Xeon Silver 4510, 256 GB, 4x 1.92 TB SSD",
+     "qty": 1,
+     "unit_price": "45550.00",
+     "unit_code": "H87",
+     "tax_category": "S",
+     "tax_rate": "5"
+    },
+    {
+     "part_number": "DP4400-24T",
+     "name": "PowerProtect DP4400 integrated appliance",
+     "description": "PowerProtect DP4400 integrated appliance, 24 TB",
+     "qty": 1,
+     "unit_price": "148190.00",
+     "unit_code": "H87",
+     "tax_category": "S",
+     "tax_rate": "5"
+    },
+    {
+     "part_number": "PS-PRO-3Y-NBD",
+     "name": "ProSupport Plus 3 years",
+     "description": "ProSupport Plus 3 years, next business day onsite",
+     "qty": 1,
+     "unit_price": "6130.00",
+     "unit_code": "C62",
+     "tax_category": "S",
+     "tax_rate": "5"
+    }
+   ]
+  },
+  {
+   "id": "INV-2026-0002",
+   "issue_date": "2026-10-27",
+   "due_date": "2026-11-26",
+   "currency": "AED",
+   "customer": "MCB",
+   "customer_po": "MCB-PO-407533",
+   "type_code": "380",
+   "transaction_flags": "00000000",
+   "payment_means": "30",
+   "lines": [
+    {
+     "part_number": "RSA-SID-700-50",
+     "name": "RSA SecurID SID700 hardware tokens",
+     "description": "RSA SecurID SID700 hardware tokens, pack of 50, 3 years",
+     "qty": 3,
+     "unit_price": "9595.00",
+     "unit_code": "C62",
+     "tax_category": "S",
+     "tax_rate": "5"
+    },
+    {
+     "part_number": "PER760-XS2",
+     "name": "PowerEdge R760 2U server",
+     "description": "PowerEdge R760 2U server, 2x Xeon Silver 4510, 256 GB, 4x 1.92 TB SSD",
+     "qty": 2,
+     "unit_price": "43860.00",
+     "unit_code": "H87",
+     "tax_category": "S",
+     "tax_rate": "5"
+    },
+    {
+     "part_number": "FP-DLP-ENT-1Y",
+     "name": "Forcepoint DLP Endpoint licence",
+     "description": "Forcepoint DLP Endpoint licence, per user, 1 year",
+     "qty": 50,
+     "unit_price": "190.00",
+     "unit_code": "C62",
+     "tax_category": "S",
+     "tax_rate": "5"
+    },
+    {
+     "part_number": "QLE2772-HBA",
+     "name": "QLogic QLE2772 32Gb dual-port Fibre Channel HBA",
+     "description": "QLogic QLE2772 32Gb dual-port Fibre Channel HBA",
+     "qty": 8,
+     "unit_price": "3760.00",
+     "unit_code": "H87",
+     "tax_category": "S",
+     "tax_rate": "5"
+    }
+   ]
+  },
+  {
+   "id": "INV-2026-0003",
+   "issue_date": "2026-10-22",
+   "due_date": "2026-11-21",
+   "currency": "AED",
+   "customer": "GCB",
+   "customer_po": "GCB-PO-140669",
+   "type_code": "380",
+   "transaction_flags": "00000000",
+   "payment_means": "30",
+   "lines": [
+    {
+     "part_number": "PS-PRO-3Y-NBD",
+     "name": "ProSupport Plus 3 years",
+     "description": "ProSupport Plus 3 years, next business day onsite",
+     "qty": 4,
+     "unit_price": "6050.00",
+     "unit_code": "C62",
+     "tax_category": "S",
+     "tax_rate": "5"
+    },
+    {
+     "part_number": "ME5024-12T",
+     "name": "PowerVault ME5024 array",
+     "description": "PowerVault ME5024 array, 12x 2.4 TB SAS 10K",
+     "qty": 1,
+     "unit_price": "47435.00",
+     "unit_code": "H87",
+     "tax_category": "S",
+     "tax_rate": "5"
+    }
+   ]
+  },
+  {
+   "id": "INV-2026-0004",
+   "issue_date": "2026-10-16",
+   "due_date": "2026-11-15",
+   "currency": "AED",
+   "customer": "SPAC",
+   "customer_po": "SPAC-26-0387",
+   "type_code": "380",
+   "transaction_flags": "00000000",
+   "payment_means": "30",
+   "lines": [
+    {
+     "part_number": "PER460-T1",
+     "name": "PowerEdge T360 tower server",
+     "description": "PowerEdge T360 tower server, Xeon E-2434, 32 GB, 2x 2 TB HDD",
+     "qty": 2,
+     "unit_price": "10120.00",
+     "unit_code": "H87",
+     "tax_category": "S",
+     "tax_rate": "5"
+    },
+    {
+     "part_number": "LAT7450-I7",
+     "name": "Latitude 7450 laptop",
+     "description": "Latitude 7450 laptop, Core Ultra 7 165U, 16 GB, 512 GB",
+     "qty": 60,
+     "unit_price": "6520.00",
+     "unit_code": "H87",
+     "tax_category": "S",
+     "tax_rate": "5"
+    }
+   ]
+  },
+  {
+   "id": "INV-2026-0005",
+   "issue_date": "2026-10-22",
+   "due_date": "2026-11-21",
+   "currency": "AED",
+   "customer": "DMC",
+   "customer_po": "DMC/IT/PO/7833",
+   "type_code": "380",
+   "transaction_flags": "00000000",
+   "payment_means": "30",
+   "lines": [
+    {
+     "part_number": "DP4400-24T",
+     "name": "PowerProtect DP4400 integrated appliance",
+     "description": "PowerProtect DP4400 integrated appliance, 24 TB",
+     "qty": 2,
+     "unit_price": "163010.00",
+     "unit_code": "H87",
+     "tax_category": "S",
+     "tax_rate": "5"
+    },
+    {
+     "part_number": "ME5024-12T",
+     "name": "PowerVault ME5024 array",
+     "description": "PowerVault ME5024 array, 12x 2.4 TB SAS 10K",
+     "qty": 2,
+     "unit_price": "50000.00",
+     "unit_code": "H87",
+     "tax_category": "S",
+     "tax_rate": "5"
+    }
+   ]
+  },
+  {
+   "id": "INV-2026-0006",
+   "issue_date": "2026-10-23",
+   "due_date": "2026-11-22",
+   "currency": "AED",
+   "customer": "GCB",
+   "customer_po": "GCB-PO-230557",
+   "type_code": "380",
+   "transaction_flags": "00000000",
+   "payment_means": "30",
+   "lines": [
+    {
+     "part_number": "PER760-XS2",
+     "name": "PowerEdge R760 2U server",
+     "description": "PowerEdge R760 2U server, 2x Xeon Silver 4510, 256 GB, 4x 1.92 TB SSD",
+     "qty": 1,
+     "unit_price": "46465.00",
+     "unit_code": "H87",
+     "tax_category": "S",
+     "tax_rate": "5"
+    },
+    {
+     "part_number": "PS-PRO-3Y-NBD",
+     "name": "ProSupport Plus 3 years",
+     "description": "ProSupport Plus 3 years, next business day onsite",
+     "qty": 6,
+     "unit_price": "6105.00",
+     "unit_code": "C62",
+     "tax_category": "S",
+     "tax_rate": "5"
+    }
+   ]
+  },
+  {
+   "id": "INV-2026-0007",
+   "issue_date": "2026-10-19",
+   "due_date": "2026-11-18",
+   "currency": "AED",
+   "customer": "DMC",
+   "customer_po": "DMC/IT/PO/3479",
+   "type_code": "380",
+   "transaction_flags": "00000000",
+   "payment_means": "30",
+   "lines": [
+    {
+     "part_number": "LAT7450-I7",
+     "name": "Latitude 7450 laptop",
+     "description": "Latitude 7450 laptop, Core Ultra 7 165U, 16 GB, 512 GB",
+     "qty": 20,
+     "unit_price": "6400.00",
+     "unit_code": "H87",
+     "tax_category": "S",
+     "tax_rate": "5"
+    }
+   ]
+  },
+  {
+   "id": "INV-2026-0008",
+   "issue_date": "2026-10-20",
+   "due_date": "2026-11-19",
+   "currency": "AED",
+   "customer": "AWMS",
+   "customer_po": "AWMS/PROC/2026/4748",
+   "type_code": "380",
+   "transaction_flags": "00000000",
+   "payment_means": "30",
+   "lines": [
+    {
+     "part_number": "PER660-XS1",
+     "name": "PowerEdge R660 1U server",
+     "description": "PowerEdge R660 1U server, 1x Xeon Silver 4514Y, 128 GB, 2x 960 GB SSD",
+     "qty": 4,
+     "unit_price": "25610.00",
+     "unit_code": "H87",
+     "tax_category": "S",
+     "tax_rate": "5"
+    },
+    {
+     "part_number": "S5248F-ON",
+     "name": "PowerSwitch S5248F-ON",
+     "description": "PowerSwitch S5248F-ON, 48x 25GbE, 4x 100GbE",
+     "qty": 12,
+     "unit_price": "35990.00",
+     "unit_code": "H87",
+     "tax_category": "S",
+     "tax_rate": "5"
+    }
+   ]
+  },
+  {
+   "id": "INV-2026-0009",
+   "issue_date": "2026-10-13",
+   "due_date": "2026-11-12",
+   "currency": "AED",
+   "customer": "QLG",
+   "customer_po": "QLG4573494166",
+   "type_code": "380",
+   "transaction_flags": "00000000",
+   "payment_means": "30",
+   "lines": [
+    {
+     "part_number": "WD22TB4-DK",
+     "name": "Thunderbolt dock WD22TB4",
+     "description": "Thunderbolt dock WD22TB4",
+     "qty": 40,
+     "unit_price": "1260.00",
+     "unit_code": "H87",
+     "tax_category": "S",
+     "tax_rate": "5"
+    },
+    {
+     "part_number": "LAT7450-I7",
+     "name": "Latitude 7450 laptop",
+     "description": "Latitude 7450 laptop, Core Ultra 7 165U, 16 GB, 512 GB",
+     "qty": 25,
+     "unit_price": "6180.00",
+     "unit_code": "H87",
+     "tax_category": "S",
+     "tax_rate": "5"
+    },
+    {
+     "part_number": "CUP-DEX-USR-1Y",
+     "name": "ControlUp DEX platform",
+     "description": "ControlUp DEX platform, per user, 1 year",
+     "qty": 25,
+     "unit_price": "140.00",
+     "unit_code": "C62",
+     "tax_category": "S",
+     "tax_rate": "5"
+    },
+    {
+     "part_number": "VVF-CORE-1Y",
+     "name": "VMware vSphere Foundation subscription",
+     "description": "VMware vSphere Foundation subscription, per core, 1 year",
+     "qty": 150,
+     "unit_price": "555.00",
+     "unit_code": "C62",
+     "tax_category": "S",
+     "tax_rate": "5"
+    }
+   ]
+  },
+  {
+   "id": "INV-2026-0010",
+   "issue_date": "2026-10-21",
+   "due_date": "2026-11-20",
+   "currency": "AED",
+   "customer": "SPAC",
+   "customer_po": "SPAC-26-1229",
+   "type_code": "380",
+   "transaction_flags": "00000000",
+   "payment_means": "30",
+   "lines": [
+    {
+     "part_number": "WD22TB4-DK",
+     "name": "Thunderbolt dock WD22TB4",
+     "description": "Thunderbolt dock WD22TB4",
+     "qty": 10,
+     "unit_price": "1260.00",
+     "unit_code": "H87",
+     "tax_category": "S",
+     "tax_rate": "5"
+    }
+   ]
+  },
+  {
+   "id": "INV-2026-0011",
+   "issue_date": "2026-10-16",
+   "due_date": "2026-11-15",
+   "currency": "AED",
+   "customer": "BAIS",
+   "customer_po": "BAIS-26-9585",
+   "type_code": "380",
+   "transaction_flags": "00000000",
+   "payment_means": "30",
+   "lines": [
+    {
+     "part_number": "PER460-T1",
+     "name": "PowerEdge T360 tower server",
+     "description": "PowerEdge T360 tower server, Xeon E-2434, 32 GB, 2x 2 TB HDD",
+     "qty": 1,
+     "unit_price": "11095.00",
+     "unit_code": "H87",
+     "tax_category": "S",
+     "tax_rate": "5"
+    },
+    {
+     "part_number": "LAT7450-I7",
+     "name": "Latitude 7450 laptop",
+     "description": "Latitude 7450 laptop, Core Ultra 7 165U, 16 GB, 512 GB",
+     "qty": 25,
+     "unit_price": "6750.00",
+     "unit_code": "H87",
+     "tax_category": "S",
+     "tax_rate": "5"
+    },
+    {
+     "part_number": "WD22TB4-DK",
+     "name": "Thunderbolt dock WD22TB4",
+     "description": "Thunderbolt dock WD22TB4",
+     "qty": 20,
+     "unit_price": "1215.00",
+     "unit_code": "H87",
+     "tax_category": "S",
+     "tax_rate": "5"
+    },
+    {
+     "part_number": "PRE3680-WS",
+     "name": "Precision 3680 tower workstation",
+     "description": "Precision 3680 tower workstation, Core i9, 64 GB, RTX 2000 Ada",
+     "qty": 5,
+     "unit_price": "13770.00",
+     "unit_code": "H87",
+     "tax_category": "S",
+     "tax_rate": "5"
+    }
+   ]
+  },
+  {
+   "id": "INV-2026-0012",
+   "issue_date": "2026-10-15",
+   "due_date": "2026-11-14",
+   "currency": "AED",
+   "customer": "AWMS",
+   "customer_po": "AWMS/PROC/2026/5657",
+   "type_code": "380",
+   "transaction_flags": "00000000",
+   "payment_means": "30",
+   "lines": [
+    {
+     "part_number": "DD6400-64T",
+     "name": "PowerProtect DD6400 backup appliance",
+     "description": "PowerProtect DD6400 backup appliance, 64 TB usable",
+     "qty": 2,
+     "unit_price": "199120.00",
+     "unit_code": "H87",
+     "tax_category": "S",
+     "tax_rate": "5"
+    }
+   ]
+  },
+  {
+   "id": "INV-2026-0013",
+   "issue_date": "2026-10-23",
+   "due_date": "2026-11-22",
+   "currency": "AED",
+   "customer": "AWMS",
+   "customer_po": "AWMS/PROC/2026/8568",
+   "type_code": "380",
+   "transaction_flags": "00000000",
+   "payment_means": "30",
+   "lines": [
+    {
+     "part_number": "S5248F-ON",
+     "name": "PowerSwitch S5248F-ON",
+     "description": "PowerSwitch S5248F-ON, 48x 25GbE, 4x 100GbE",
+     "qty": 2,
+     "unit_price": "32715.00",
+     "unit_code": "H87",
+     "tax_category": "S",
+     "tax_rate": "5"
+    },
+    {
+     "part_number": "DD6400-64T",
+     "name": "PowerProtect DD6400 backup appliance",
+     "description": "PowerProtect DD6400 backup appliance, 64 TB usable",
+     "qty": 1,
+     "unit_price": "203200.00",
+     "unit_code": "H87",
+     "tax_category": "S",
+     "tax_rate": "5"
+    },
+    {
+     "part_number": "PS-PRO-3Y-NBD",
+     "name": "ProSupport Plus 3 years",
+     "description": "ProSupport Plus 3 years, next business day onsite",
+     "qty": 2,
+     "unit_price": "5615.00",
+     "unit_code": "C62",
+     "tax_category": "S",
+     "tax_rate": "5"
+    },
+    {
+     "part_number": "PER760-XS2",
+     "name": "PowerEdge R760 2U server",
+     "description": "PowerEdge R760 2U server, 2x Xeon Silver 4510, 256 GB, 4x 1.92 TB SSD",
+     "qty": 4,
+     "unit_price": "47235.00",
+     "unit_code": "H87",
+     "tax_category": "S",
+     "tax_rate": "5"
+    }
+   ]
+  },
+  {
+   "id": "INV-2026-0014",
+   "issue_date": "2026-10-20",
+   "due_date": "2026-11-19",
+   "currency": "AED",
+   "customer": "GCB",
+   "customer_po": "GCB-PO-301493",
+   "type_code": "380",
+   "transaction_flags": "00000001",
+   "payment_means": "30",
+   "lines": [
+    {
+     "part_number": "QLE2772-HBA",
+     "name": "QLogic QLE2772 32Gb dual-port Fibre Channel HBA",
+     "description": "QLogic QLE2772 32Gb dual-port Fibre Channel HBA",
+     "qty": 4,
+     "unit_price": "3615.00",
+     "unit_code": "H87",
+     "tax_category": "Z",
+     "tax_rate": "0"
+    },
+    {
+     "part_number": "PER760-XS2",
+     "name": "PowerEdge R760 2U server",
+     "description": "PowerEdge R760 2U server, 2x Xeon Silver 4510, 256 GB, 4x 1.92 TB SSD",
+     "qty": 1,
+     "unit_price": "45550.00",
+     "unit_code": "H87",
+     "tax_category": "Z",
+     "tax_rate": "0"
+    },
+    {
+     "part_number": "DP4400-24T",
+     "name": "PowerProtect DP4400 integrated appliance",
+     "description": "PowerProtect DP4400 integrated appliance, 24 TB",
+     "qty": 1,
+     "unit_price": "148190.00",
+     "unit_code": "H87",
+     "tax_category": "Z",
+     "tax_rate": "0"
+    },
+    {
+     "part_number": "PS-PRO-3Y-NBD",
+     "name": "ProSupport Plus 3 years",
+     "description": "ProSupport Plus 3 years, next business day onsite",
+     "qty": 1,
+     "unit_price": "6130.00",
+     "unit_code": "C62",
+     "tax_category": "Z",
+     "tax_rate": "0"
+    }
+   ]
+  }
+ ]
+}
