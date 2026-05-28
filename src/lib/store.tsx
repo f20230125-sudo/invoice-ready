@@ -52,7 +52,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       }),
     [customers],
   );
-  const fixCustomer = useCallback((code: string, patch: Partial<Customer>) => save({ ...fixed, [code]: { ...fixed[code], ...patch } }), [fixed]);
+  const fixCustomer = useCallback((code: string, patch: Partial<Customer>) => {
+    const latest = { ...fixed, ...load() };
+    save({ ...latest, [code]: { ...latest[code], ...patch } });
+  }, [fixed]);
   const value: Store = {
     customers,
     checked,

@@ -5,6 +5,7 @@ export interface Party {
   trn: string | null; // 15-digit Tax Registration Number; the first 10 digits are the TIN
   legal_id: string | null; // trade licence, Emirates ID, passport or Cabinet Decision number
   legal_id_type: "TL" | "EID" | "PAS" | "CD" | null;
+  legal_id_authority: string | null;
   address_line: string | null;
   city: string | null;
   subdivision: string | null; // the emirate
@@ -37,6 +38,7 @@ export interface InvoiceDraft {
   type_code: string; // 380 commercial invoice, 480 out of scope of tax
   transaction_flags: string; // 8 positions of 0/1
   payment_means: string | null; // UNCL4461
+  delivery?: Pick<Party, "address_line" | "city" | "subdivision" | "country">;
   lines: Line[];
 }
 

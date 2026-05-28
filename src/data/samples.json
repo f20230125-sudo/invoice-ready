@@ -4,9 +4,10 @@
   "trn": "100458213900003",
   "legal_id": "DIC-104582",
   "legal_id_type": "TL",
+  "legal_id_authority": "Dubai Development Authority",
   "address_line": "Office 214, Building 9, Dubai Internet City",
   "city": "Dubai",
-  "subdivision": "Dubai",
+  "subdivision": "DXB",
   "country": "AE"
  },
  "customers": [
@@ -17,10 +18,11 @@
    "sector": "government",
    "address_line": "Municipality Complex, Sheikh Rashid Street",
    "city": "Ajman",
-   "subdivision": "Ajman",
+   "subdivision": "AJM",
    "country": "AE",
    "legal_id": null,
-   "legal_id_type": null
+   "legal_id_type": null,
+   "legal_id_authority": null
   },
   {
    "code": "SPA",
@@ -29,10 +31,11 @@
    "sector": "government",
    "address_line": "Marine Building 2, Port Road",
    "city": "Fujairah",
-   "subdivision": "Fujairah",
+   "subdivision": "FUJ",
    "country": "AE",
    "legal_id": "CD-2019-1147",
-   "legal_id_type": "CD"
+   "legal_id_type": "CD",
+   "legal_id_authority": null
   },
   {
    "code": "GCB",
@@ -41,10 +44,11 @@
    "sector": "bank",
    "address_line": "Crescent Tower, Al Maryah Island",
    "city": "Abu Dhabi",
-   "subdivision": "Abu Dhabi",
+   "subdivision": "AUH",
    "country": "AE",
    "legal_id": "TL-704512",
-   "legal_id_type": "TL"
+   "legal_id_type": "TL",
+   "legal_id_authority": "Abu Dhabi Department of Economic Development"
   },
   {
    "code": "MCB",
@@ -53,10 +57,11 @@
    "sector": "bank",
    "address_line": "Level 18, Marjan Business Tower, Business Bay",
    "city": "Dubai",
-   "subdivision": "Dubai",
+   "subdivision": "DXB",
    "country": "AE",
    "legal_id": "TL-611903",
-   "legal_id_type": "TL"
+   "legal_id_type": "TL",
+   "legal_id_authority": "Dubai Department of Economy and Tourism"
   },
   {
    "code": "SPAC",
@@ -65,10 +70,11 @@
    "sector": "education",
    "address_line": "Academic Block A, Al Rahmaniya 3",
    "city": null,
-   "subdivision": "Sharjah",
+   "subdivision": "SHJ",
    "country": "AE",
    "legal_id": null,
-   "legal_id_type": null
+   "legal_id_type": null,
+   "legal_id_authority": null
   },
   {
    "code": "BAIS",
@@ -77,10 +83,11 @@
    "sector": "education",
    "address_line": "Central Office, Al Qusais 2",
    "city": "Dubai",
-   "subdivision": "Dubai",
+   "subdivision": "DXB",
    "country": "AE",
    "legal_id": "TL-882104",
-   "legal_id_type": "TL"
+   "legal_id_type": "TL",
+   "legal_id_authority": "Dubai Department of Economy and Tourism"
   },
   {
    "code": "DMC",
@@ -89,10 +96,11 @@
    "sector": "healthcare",
    "address_line": "Medical District, Khalifa City",
    "city": "Abu Dhabi",
-   "subdivision": "Abu Dhabi",
+   "subdivision": "AUH",
    "country": "AE",
    "legal_id": "TL-905517",
-   "legal_id_type": "TL"
+   "legal_id_type": "TL",
+   "legal_id_authority": "Abu Dhabi Department of Economic Development"
   },
   {
    "code": "QLG",
@@ -101,10 +109,11 @@
    "sector": "enterprise",
    "address_line": "Warehouse 12, Jebel Ali Free Zone South",
    "city": "Dubai",
-   "subdivision": "Dubai",
+   "subdivision": "DXB",
    "country": "AE",
    "legal_id": "TL-447210",
-   "legal_id_type": "TL"
+   "legal_id_type": "TL",
+   "legal_id_authority": "Jebel Ali Free Zone Authority"
   }
  ],
  "invoices": [
@@ -658,7 +667,13 @@
      "tax_category": "Z",
      "tax_rate": "0"
     }
-   ]
+   ],
+   "delivery": {
+    "address_line": "Warehouse 6, Rusayl Industrial Estate",
+    "city": "Muscat",
+    "subdivision": "Muscat",
+    "country": "OM"
+   }
   }
  ]
 }

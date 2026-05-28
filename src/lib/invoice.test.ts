@@ -1,9 +1,10 @@
 import { describe, expect, it } from "vitest";
+import { DOMParser } from "@xmldom/xmldom";
 import samplesJson from "../data/samples.json";
 import { compute, tin } from "./compute";
 import { FIELDS } from "./fields";
 import { amount, percentOf, toFils } from "./money";
-import { readBack } from "./readback";
+import { at, readBack } from "./readback";
 import type { InvoiceDraft, Samples } from "./types";
 import { fieldStatus, validate } from "./validate";
 import { toUbl } from "./ubl";
@@ -45,7 +46,15 @@ describe("the sample invoices", () => {
     const awms = samples.invoices.find((d) => d.customer === "AWMS")!;
     const msgs = validate(run(awms)).map((f) => f.message);
     expect(msgs).toContain(
-      "Customer TRN 10031174020003 has 14 digits; a TRN has 15 and starts with 100. Without it there is no electronic address to send the invoice to.",
+      "Customer TRN 10031174020003 has 14 digits; a TRN has 15 digits, starts with 100 and ends in 03. Without it there is no electronic address to send the invoice to.",
+    );
+  });
+
+  it("holds a 15-digit TRN that does not end in 03 (IBR-132-AE)", () => {
+    const awms = samples.invoices.find((d) => d.customer === "AWMS")!;
+    const wrong = samples.customers.map((c) => (c.code === "AWMS" ? { ...c, trn: "100311740200004" } : c));
+    expect(validate(run(awms, wrong)).map((f) => f.message)).toContain(
+      "Customer TRN 100311740200004 is 15 digits but does not start with 100 and end in 03; a TRN has 15 digits, starts with 100 and ends in 03. Without it there is no electronic address to send the invoice to.",
     );
   });
 
@@ -57,6 +66,40 @@ describe("the sample invoices", () => {
 });
 
 describe("the generated PINT AE XML", () => {
+  it("writes permitted emirate codes for every UAE party", () => {
+    for (const d of samples.invoices) {
+      const root = new DOMParser().parseFromString(toUbl(run(d)), "text/xml").documentElement!;
+      for (const party of ["AccountingSupplierParty", "AccountingCustomerParty"]) {
+        expect(at(root, `${party}/Party/PostalAddress/CountrySubentity`)[0]).toMatch(/^(AUH|DXB|SHJ|UAQ|FUJ|AJM|RAK)$/);
+      }
+    }
+  });
+
+  it("writes the issuing authority for seller and buyer trade licences", () => {
+    const c = run(clean);
+    const root = new DOMParser().parseFromString(toUbl(c), "text/xml").documentElement!;
+    expect(at(root, "AccountingSupplierParty/Party/PartyLegalEntity/CompanyID@schemeAgencyName")[0]).toBeTruthy();
+    expect(at(root, "AccountingCustomerParty/Party/PartyLegalEntity/CompanyID@schemeAgencyName")[0]).toBeTruthy();
+  });
+
+  it("writes an export delivery address at its UBL path", () => {
+    const exp = samples.invoices.find((d) => d.transaction_flags === "00000001")!;
+    const root = new DOMParser().parseFromString(toUbl(run(exp)), "text/xml").documentElement!;
+    const path = "Delivery/DeliveryLocation/Address";
+    expect(at(root, `${path}/StreetName`)).toEqual(["Warehouse 6, Rusayl Industrial Estate"]);
+    expect(at(root, `${path}/CityName`)).toEqual(["Muscat"]);
+    expect(at(root, `${path}/CountrySubentity`)).toEqual(["Muscat"]);
+    expect(at(root, `${path}/Country/IdentificationCode`)).toEqual(["OM"]);
+  });
+
+  it("writes a purchase order as an order reference", () => {
+    const root = new DOMParser().parseFromString(toUbl(run(clean)), "text/xml").documentElement!;
+    expect(at(root, "OrderReference/ID")).toEqual([clean.customer_po]);
+    expect(at(root, "BuyerReference")).toEqual([]);
+    const noPo = { ...clean, customer_po: "" };
+    expect(toUbl(run(noPo))).not.toContain("cac:OrderReference");
+  });
+
   it("carries all 51 mandatory fields and its totals add up", () => {
     const c = run(clean);
     const back = readBack(toUbl(c));
@@ -86,6 +129,98 @@ describe("the generated PINT AE XML", () => {
 
 describe("rules", () => {
   const broken = (patch: Partial<InvoiceDraft>) => validate(run({ ...clean, ...patch })).map((f) => f.message);
+
+  it("requires a permitted emirate code for UAE seller and buyer addresses", () => {
+    const customers = samples.customers.map((c) => c.code === clean.customer ? { ...c, subdivision: "Abu Dhabi" } : c);
+    const findings = validate(run(clean, customers, { ...samples.seller, subdivision: "Dubai" }));
+    expect(findings).toEqual(expect.arrayContaining([
+      expect.objectContaining({ field: 19, where: "company" }),
+      expect.objectContaining({ field: 28, where: "customer" }),
+    ]));
+    for (const subdivision of ["AUH", "DXB", "SHJ", "UAQ", "FUJ", "AJM", "RAK"]) {
+      expect(validate(run(clean, samples.customers, { ...samples.seller, subdivision }))).toEqual([]);
+    }
+    expect(validate(run(clean, samples.customers, { ...samples.seller, country: "OM", subdivision: "Muscat" }))).toEqual([]);
+  });
+
+  it("requires the issuing authority when a seller or buyer uses a trade licence", () => {
+    const seller = { ...samples.seller, legal_id_authority: null };
+    const customers = samples.customers.map((c) => ({ ...c, legal_id_authority: null }));
+    const findings = validate(run(clean, customers, seller)).filter((f) => f.message.includes("issuing authority"));
+    expect(findings.map((f) => f.where)).toEqual(["company", "customer"]);
+    const cabinet = { ...seller, legal_id_type: "CD" as const };
+    expect(validate(run(clean, samples.customers, cabinet))).toEqual([]);
+  });
+
+  it("reverse charge contributes zero VAT to lines, subtotals and payable", () => {
+    const c = run({ ...clean, lines: [{ ...clean.lines[0], qty: 1, unit_price: "100.00", tax_category: "AE", tax_rate: "5" }] });
+    expect(c.lines[0].vat_aed).toBe(0);
+    expect(c.lines[0].total_aed).toBe(10000);
+    expect(c.subtotals[0].tax).toBe(0);
+    expect(c.tax_total).toBe(0);
+    expect(c.payable).toBe(10000);
+    expect(readBack(toUbl(c)).sums.every((s) => s.ok)).toBe(true);
+  });
+
+  it("rounds fractional quantities to whole fils before VAT and XML read-back", () => {
+    const c = run({ ...clean, lines: [{ ...clean.lines[0], qty: 0.5, unit_price: "0.01" }] });
+    expect(c.lines[0].net).toBe(1);
+    expect(c.line_total).toBe(1);
+    expect(c.payable).toBe(1);
+    expect(readBack(toUbl(c)).sums.every((s) => s.ok)).toBe(true);
+  });
+
+  it.each(["oops", "NaN", "Infinity", "", " ", "0x5", "1e2", "9".repeat(400)])("holds malformed rate %j without breaking read-back", (tax_rate) => {
+    for (const tax_category of ["S", "AE"] as const) {
+      const c = run({ ...clean, lines: [{ ...clean.lines[0], tax_category, tax_rate }] });
+      expect(validate(c)).toEqual(expect.arrayContaining([expect.objectContaining({ field: 47, line: 1 })]));
+      expect(Number.isFinite(c.tax_total)).toBe(true);
+      expect(Number.isFinite(c.lines[0].vat_aed)).toBe(true);
+      expect(() => readBack(toUbl(c))).not.toThrow();
+    }
+  });
+
+  it("holds exports with absent, incomplete or domestic delivery addresses", () => {
+    const exp = samples.invoices.find((d) => d.transaction_flags === "00000001")!;
+    const delivery = { address_line: "Warehouse 6, Rusayl Industrial Estate", city: "Muscat", subdivision: "Muscat", country: "OM" };
+    const drafts = [
+      { ...exp, delivery: undefined },
+      ...Object.keys(delivery).map((key) => ({ ...exp, delivery: { ...delivery, [key]: null } })),
+      { ...exp, delivery: { ...delivery, country: "AE" } },
+      { ...exp, delivery: { ...delivery, country: "ZZ" } },
+    ];
+    for (const d of drafts) expect(validate(run(d))).toEqual(expect.arrayContaining([
+      expect.objectContaining({ where: "invoice", message: expect.stringMatching(/delivery/i) }),
+    ]));
+  });
+
+  it("holds exempt lines until exemption reasons and category-specific XML are supported", () => {
+    expect(broken({ lines: [...clean.lines, { ...clean.lines[0], tax_category: "E", tax_rate: "0" }] }))
+      .toContain(`Line ${clean.lines.length + 1}: exempt VAT (E) needs an exemption reason and category-specific XML, which are not supported yet.`);
+  });
+
+  it("out-of-scope invoices reject standard, reverse-charge and deemed-supply categories", () => {
+    for (const tax_category of ["S", "AE", "N"] as const) {
+      expect(broken({ type_code: "480", lines: [{ ...clean.lines[0], tax_category }] }).some((m) => m.includes("480"))).toBe(true);
+    }
+    for (const tax_category of ["O", "Z"] as const) {
+      expect(broken({ type_code: "480", lines: [{ ...clean.lines[0], tax_category, tax_rate: "0" }] })).toEqual([]);
+    }
+  });
+
+  it("checks payment means against the UAE list", () => {
+    for (const payment_means of ["999", "2", "ZZZ"]) expect(broken({ payment_means }).some((m) => m.includes("Payment means"))).toBe(true);
+    for (const payment_means of ["1", "10", "20", "21", "30", "49", "54", "55", "68"]) expect(broken({ payment_means })).toEqual([]);
+  });
+
+  it("checks seller and buyer country membership, including Peppol's additional codes", () => {
+    const customers = samples.customers.map((c) => c.code === clean.customer ? { ...c, country: "ZZ" } : c);
+    const findings = validate(run(clean, customers, { ...samples.seller, country: "ZZ" }));
+    expect(findings.map((f) => f.field)).toEqual([20, 29]);
+    for (const country of ["AE", "OM", "GB", "US", "1A", "XI"]) {
+      expect(validate(run(clean, samples.customers, { ...samples.seller, country }))).toEqual([]);
+    }
+  });
 
   it("standard rate is 5%", () => {
     expect(broken({ lines: [{ ...clean.lines[0], tax_rate: "10" }] })).toContain("Line 1: standard rate (S) is 5% in the UAE, not 10%.");
