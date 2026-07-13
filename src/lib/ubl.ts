@@ -100,7 +100,8 @@ export function toUbl(c: Computed): string {
       .leaf("cbc:TaxAmount", amount(g.tax), { currencyID: cur })
       .open("cac:TaxCategory")
       .leaf("cbc:ID", g.category)
-      .leaf("cbc:Percent", g.rate)
+      // ALIGNED-IBRP-O-11-AE: out-of-scope breakdowns must not carry a percentage.
+      .leaf("cbc:Percent", g.category === "O" ? null : g.rate)
       .open("cac:TaxScheme")
       .leaf("cbc:ID", "VAT")
       .close("cac:TaxScheme")
@@ -117,7 +118,7 @@ export function toUbl(c: Computed): string {
   for (const l of c.lines) {
     x.open("cac:InvoiceLine")
       .leaf("cbc:ID", String(l.n))
-      .leaf("cbc:InvoicedQuantity", String(l.qty), { unitCode: l.unit_code })
+      .leaf("cbc:InvoicedQuantity", Number.isFinite(l.qty) ? String(l.qty) : null, { unitCode: l.unit_code })
       .leaf("cbc:LineExtensionAmount", amount(l.net), { currencyID: cur })
       .open("cac:Item")
       .leaf("cbc:Description", l.description)
@@ -127,7 +128,8 @@ export function toUbl(c: Computed): string {
       .close("cac:SellersItemIdentification")
       .open("cac:ClassifiedTaxCategory")
       .leaf("cbc:ID", l.tax_category)
-      .leaf("cbc:Percent", l.tax_rate)
+      // ALIGNED-IBRP-O-05: out-of-scope lines must not carry a percentage.
+      .leaf("cbc:Percent", l.tax_category === "O" ? null : l.tax_rate)
       .open("cac:TaxScheme")
       .leaf("cbc:ID", "VAT")
       .close("cac:TaxScheme")
