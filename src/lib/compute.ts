@@ -1,4 +1,4 @@
-import { percentOf, toFils, type Fils } from "./money";
+import { percentOf, toFils, validRate, type Fils } from "./money";
 import type { Customer, InvoiceDraft, Party } from "./types";
 
 // Everything the electronic invoice states, computed once from the draft and the master data.
@@ -51,8 +51,9 @@ export function compute(draft: InvoiceDraft, seller: Party, customers: Customer[
   const buyer = customers.find((c) => c.code === draft.customer) ?? null;
   const lines = draft.lines.map((l, i) => {
     const price = toFils(l.unit_price);
-    const net = price * l.qty;
-    const vat = percentOf(net, l.tax_rate);
+    const net = Math.round(price * l.qty);
+    // ALIGNED-IBRP-AE-09-AE: reverse-charge VAT is not charged to the buyer.
+    const vat = l.tax_category === "AE" || !validRate(l.tax_rate) ? 0 : percentOf(net, l.tax_rate);
     return {
       n: i + 1, part_number: l.part_number, name: l.name, description: l.description, qty: l.qty, unit_code: l.unit_code,
       price, net, tax_category: l.tax_category, tax_rate: l.tax_rate, vat_aed: vat, total_aed: net + vat,
@@ -66,7 +67,7 @@ export function compute(draft: InvoiceDraft, seller: Party, customers: Customer[
     groups.set(key, g);
   }
   // Tax per category is computed on the category's taxable total (IBR-CO-14 sums these).
-  const subtotals = [...groups.values()].map((g) => ({ ...g, tax: percentOf(g.taxable, g.rate) }));
+  const subtotals = [...groups.values()].map((g) => ({ ...g, tax: g.category === "AE" || !validRate(g.rate) ? 0 : percentOf(g.taxable, g.rate) }));
   const line_total = lines.reduce((s, l) => s + l.net, 0);
   const tax_total = subtotals.reduce((s, g) => s + g.tax, 0);
   return {

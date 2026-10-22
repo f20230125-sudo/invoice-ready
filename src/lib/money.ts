@@ -18,6 +18,10 @@ export function amount(fils: Fils): string {
   return `${negative ? "-" : ""}${Math.floor(abs / 100)}.${String(abs % 100).padStart(2, "0")}`;
 }
 
+export function validRate(rate: string): boolean {
+  return /^\d+(\.\d+)?$/.test(rate) && Number.isFinite(Number(rate));
+}
+
 /** Rate is a percent string ("5"); half-up rounding to the fils, as tax is computed per line and per category. */
 export function percentOf(fils: Fils, rate: string): Fils {
   const r = Number(rate);

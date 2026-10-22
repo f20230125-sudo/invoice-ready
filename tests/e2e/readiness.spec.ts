@@ -35,6 +35,23 @@ test("fixing a customer record releases its invoices", async ({ page }) => {
   await expect(page.locator(".lede")).toContainText("9 are ready");
 });
 
+test("saving in a second tab keeps corrections made in the first", async ({ page, context }) => {
+  const second = await context.newPage();
+  await second.goto("/");
+  const awms = page.locator(".records li", { hasText: "Al Waha Municipal Services" });
+  await awms.getByRole("button", { name: "Fix the record" }).click();
+  await awms.getByLabel("TRN").fill("100311740200003");
+  await awms.getByRole("button", { name: "Save the record" }).click();
+  const spac = second.locator(".records li", { hasText: "Seven Palms Academy" });
+  await spac.getByRole("button", { name: "Fix the record" }).click();
+  await spac.getByLabel("City").fill("Sharjah");
+  await spac.getByRole("button", { name: "Save the record" }).click();
+  await second.reload();
+  await expect(second.locator(".lede")).toContainText("14 are ready");
+  await page.reload();
+  await expect(page.locator(".lede")).toContainText("14 are ready");
+});
+
 test("an invoice shows its 51 fields, the sum rules and its XML", async ({ page }) => {
   await page.getByRole("link", { name: "INV-2026-0001" }).click();
   await expect(page.locator(".fields h2")).toContainText("51 of 51");
