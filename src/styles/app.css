@@ -86,6 +86,9 @@ a {
   margin: 0 auto;
   padding: var(--s6) var(--s5) var(--s5);
 }
+.page > .caption {
+  margin-bottom: var(--s1);
+}
 .foot {
   max-width: var(--page);
   margin: 0 auto;
@@ -136,10 +139,31 @@ h3 {
   max-width: 75ch;
 }
 .golive {
-  margin: var(--s4) 0 0;
+  margin: var(--s2) 0 0;
   max-width: 90ch;
   padding-left: var(--s3);
   border-left: 3px solid var(--ink);
+}
+.next-step {
+  margin: var(--s2) 0 0;
+  max-width: 75ch;
+  color: var(--ink-2);
+}
+.deadlines {
+  margin-top: var(--s2);
+}
+.deadlines summary {
+  width: fit-content;
+  min-height: 44px;
+  padding: var(--s3) 0;
+  cursor: pointer;
+  color: var(--ink-2);
+}
+.complete {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s2);
+  margin: var(--s5) 0 0;
 }
 .back {
   display: inline-block;
@@ -156,7 +180,7 @@ h3 {
   align-items: center;
   font: 600 14px/20px var(--sans);
   padding: 7px 14px;
-  min-height: 36px;
+  min-height: 44px;
   border: 1px solid var(--ink);
   border-radius: var(--radius);
   background: var(--sheet);
@@ -195,14 +219,24 @@ h3 {
   gap: var(--s3);
 }
 .record-head p {
-  margin: 4px 0 var(--s2);
+  margin: var(--s2) 0 0;
+  max-width: 90ch;
+}
+.record-content {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--s3) var(--s5);
+  align-items: start;
+}
+.record-content > div > .quiet {
+  display: block;
 }
 .fix {
+  grid-column: 1 / -1;
   display: flex;
   flex-wrap: wrap;
   gap: var(--s3);
-  align-items: end;
-  margin-top: var(--s2);
+  align-items: start;
 }
 .fix label {
   display: grid;
@@ -210,11 +244,24 @@ h3 {
   font-size: 13px;
   font-weight: 600;
   color: var(--ink-2);
+  flex: 1 1 220px;
+  min-width: 0;
+  max-width: 300px;
+}
+.fix .button {
+  margin-top: var(--s5);
+}
+.input-help {
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 18px;
 }
 .fix input {
   font: 400 15px/20px var(--sans);
   padding: 8px 10px;
-  min-height: 40px;
+  min-height: 44px;
+  width: 100%;
+  min-width: 0;
   border: 1px solid var(--rule-strong);
   border-radius: var(--radius);
   background: var(--sheet);
@@ -222,7 +269,6 @@ h3 {
 }
 .fix input.mono {
   font-family: var(--mono);
-  width: 20ch;
 }
 
 /* tables */
@@ -264,7 +310,9 @@ h3 {
   cursor: pointer;
 }
 .pad tr.row:hover td,
-.pad tr.row:hover th {
+.pad tr.row:hover th,
+.pad tr.row:focus-within td,
+.pad tr.row:focus-within th {
   background: var(--select);
 }
 .margin {
@@ -274,10 +322,13 @@ h3 {
 }
 .id {
   font-weight: 600;
-  text-decoration: none;
-}
-tr.row:hover .id {
   text-decoration: underline;
+}
+.invoice-list .id {
+  white-space: nowrap;
+}
+.mobile-label {
+  display: none;
 }
 .sub {
   display: block;
@@ -302,6 +353,13 @@ tr.row:hover .id {
   grid-template-columns: minmax(0, 1.5fr) minmax(320px, 1fr);
   gap: var(--s6);
   align-items: start;
+  margin-top: var(--s5);
+}
+.problems h2 {
+  margin-top: 0;
+}
+.inv-grid > div > .paper:first-child {
+  margin-top: 0;
 }
 .problems ul {
   list-style: none;
@@ -343,10 +401,11 @@ tr.row:hover .id {
   margin: var(--s3) 0;
 }
 .sums li {
-  display: flex;
-  align-items: center;
-  gap: var(--s2);
-  padding: 3px 0;
+  display: grid;
+  grid-template-columns: 18px max-content minmax(0, 1fr);
+  align-items: baseline;
+  gap: var(--s1) var(--s2);
+  padding: var(--s1) 0;
 }
 .actions {
   display: flex;
@@ -383,10 +442,10 @@ tr.row:hover .id {
 }
 .fields li {
   display: grid;
-  grid-template-columns: 26px minmax(0, 1fr) auto 24px;
-  gap: 2px var(--s2);
+  grid-template-columns: 26px minmax(0, 1.2fr) minmax(0, 1fr) 24px;
+  gap: var(--s1) var(--s2);
   align-items: center;
-  padding: 4px 0;
+  padding: var(--s2) 0;
   border-bottom: 1px solid var(--rule);
   font-size: 13px;
 }
@@ -396,14 +455,25 @@ tr.row:hover .id {
 .field-n {
   color: var(--ink-3);
   text-align: right;
+  grid-row: 1;
 }
 .field-value {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--ink-2);
-  max-width: 14ch;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  grid-column: 3;
+  grid-row: 1;
+  overflow-wrap: anywhere;
+  line-height: 18px;
+  text-align: right;
+}
+.field-name {
+  grid-column: 2;
+  grid-row: 1;
+  overflow-wrap: anywhere;
+}
+.field-mark {
+  grid-column: 4;
+  grid-row: 1;
 }
 .field-mark .ring {
   width: 22px;
@@ -465,14 +535,46 @@ tr.row:hover .id {
   }
 }
 @media (max-width: 760px) {
+  .top-inner,
+  .foot {
+    padding-left: var(--s4);
+    padding-right: var(--s4);
+  }
   .page {
     padding: var(--s5) var(--s4);
   }
   .parties {
     grid-template-columns: 1fr;
   }
+  .paper {
+    padding: var(--s4);
+  }
+  .record-head {
+    grid-template-columns: 40px minmax(0, 1fr);
+  }
+  .record-content {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .record-action {
+    justify-self: start;
+  }
+  .fix label {
+    flex-basis: 100%;
+    max-width: none;
+  }
+  .fix .button {
+    margin-top: 0;
+  }
+  h2 {
+    margin-top: var(--s5);
+  }
   .pad thead {
-    display: none;
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
   }
   .pad,
   .pad tbody,
@@ -483,21 +585,68 @@ tr.row:hover .id {
     width: 100%;
   }
   .pad tr {
-    padding: var(--s2) 0;
+    padding: var(--s4) var(--s3);
     border-bottom: 1px solid var(--rule-strong);
   }
   .pad td,
   .pad tbody th {
     border: 0;
-    padding: 2px 0;
+    padding: var(--s1) 0;
     text-align: left !important;
+  }
+  .pad tbody td {
+    display: grid;
+    grid-template-columns: 88px minmax(0, 1fr);
+    gap: var(--s2);
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+  .mobile-label {
+    display: block;
+    color: var(--ink-2);
+    font-size: 13px;
+    font-weight: 400;
+  }
+  .invoice-list tbody tr {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 40px;
+    gap: var(--s1) var(--s2);
+  }
+  .invoice-list tbody th {
+    grid-row: 1;
+    grid-column: 1;
+    padding-bottom: var(--s2);
+  }
+  .invoice-list tbody td {
+    grid-column: 1 / -1;
+  }
+  .invoice-list tbody td.margin {
+    display: block;
+    grid-row: 1;
+    grid-column: 2;
+    text-align: center !important;
   }
   .margin {
     width: auto;
   }
   .lines tfoot tr {
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) max-content;
+    gap: var(--s3);
+  }
+  .lines tfoot th,
+  .lines tfoot td {
+    width: auto;
+    padding: var(--s1) 0;
+  }
+  .lines tfoot td.num {
+    text-align: right !important;
+  }
+  .sums li > span:last-child {
+    grid-column: 2 / -1;
+  }
+  .sums li {
+    padding: var(--s2) 0;
   }
   .tagline {
     display: none;

@@ -28,6 +28,7 @@ export function Invoice() {
           Readiness
         </Link>
         <h1>No such invoice</h1>
+        <p className="lede">This invoice is not in the demo. Return to readiness to choose a sample invoice.</p>
       </div>
     );
   }
@@ -116,6 +117,7 @@ export function Invoice() {
               </div>
             </div>
             <table className="pad lines">
+              <caption className="visually-hidden">Invoice items, quantities, prices, VAT and totals in {c.draft.currency}.</caption>
               <thead>
                 <tr>
                   <th scope="col">Item</th>
@@ -139,13 +141,23 @@ export function Invoice() {
                       <span className="sub">{l.description}</span>
                     </th>
                     <td className="num">
-                      {l.qty} <span className="quiet small">{l.unit_code}</span>
+                      <span className="mobile-label" aria-hidden="true">Qty</span>
+                      <span>{l.qty} <span className="quiet small">{l.unit_code}</span></span>
                     </td>
-                    <td className="num">{show(l.price)}</td>
+                    <td className="num">
+                      <span className="mobile-label" aria-hidden="true">Price {c.draft.currency}</span>
+                      {show(l.price)}
+                    </td>
                     <td className="nowrap">
-                      {l.tax_category}{l.tax_category === "O" ? "" : ` ${l.tax_rate}%`}
+                      <span className="mobile-label" aria-hidden="true">VAT</span>
+                      <span>
+                        {l.tax_category}{l.tax_category === "O" ? "" : ` ${l.tax_rate}%`}
+                      </span>
                     </td>
-                    <td className="num">{show(l.net)}</td>
+                    <td className="num">
+                      <span className="mobile-label" aria-hidden="true">Net {c.draft.currency}</span>
+                      {show(l.net)}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -176,7 +188,7 @@ export function Invoice() {
             <ul className="sums">
               {back.sums.map((s) => (
                 <li key={s.rule}>
-                  {s.ok ? <PencilTick label="holds" /> : <PencilRing label="fails" />} <span className="mono small">{s.rule}</span> {s.text}
+                  {s.ok ? <PencilTick label="holds" /> : <PencilRing label="fails" />} <span className="mono small">{s.rule}</span> <span>{s.text}</span>
                 </li>
               ))}
             </ul>
@@ -184,15 +196,13 @@ export function Invoice() {
               <button type="button" className={`button${ready ? " primary" : ""}`} onClick={download}>
                 {ready ? "Download the XML" : "Download the draft XML"}
               </button>
-              <button type="button" className="button" aria-expanded={showXml} onClick={() => setShowXml((s) => !s)}>
+              <button type="button" className="button" aria-expanded={showXml} aria-controls="invoice-xml" onClick={() => setShowXml((s) => !s)}>
                 {showXml ? "Hide the XML" : "Show the XML"}
               </button>
             </div>
-            {showXml && (
-              <pre className="xml" tabIndex={0} aria-label="The invoice XML">
-                {xml}
-              </pre>
-            )}
+            <pre id="invoice-xml" className="xml" hidden={!showXml} tabIndex={0} aria-label="The invoice XML">
+              {xml}
+            </pre>
           </section>
         </div>
 
@@ -200,7 +210,7 @@ export function Invoice() {
           <h2 id="fields-h">
             Mandatory fields <span className="count">{ok} of 51</span>
           </h2>
-          <p className="quiet small">As listed by the Ministry of Finance, 23 February 2026. Line fields shown for line 1.</p>
+          <p className="quiet small">As listed by the Ministry of Finance, 23 February 2026. Line fields shown for line 1. Scroll this list to review all 51 fields.</p>
           {SECTIONS.map((sec) => (
             <div key={sec}>
               <h3>{sec}</h3>
