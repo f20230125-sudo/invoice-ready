@@ -46,7 +46,7 @@ describe("the sample invoices", () => {
     const awms = samples.invoices.find((d) => d.customer === "AWMS")!;
     const msgs = validate(run(awms)).map((f) => f.message);
     expect(msgs).toContain(
-      "Customer TRN 10031174020003 has 14 digits; a TRN has 15 digits, starts with 100 and ends in 03. Without it there is no electronic address to send the invoice to.",
+      "Customer TRN 10031174020003 has 14 digits; a TRN has 15 digits, starts with 1 and ends in 03. Without it there is no electronic address to send the invoice to.",
     );
   });
 
@@ -54,7 +54,7 @@ describe("the sample invoices", () => {
     const awms = samples.invoices.find((d) => d.customer === "AWMS")!;
     const wrong = samples.customers.map((c) => (c.code === "AWMS" ? { ...c, trn: "100311740200004" } : c));
     expect(validate(run(awms, wrong)).map((f) => f.message)).toContain(
-      "Customer TRN 100311740200004 is 15 digits but does not start with 100 and end in 03; a TRN has 15 digits, starts with 100 and ends in 03. Without it there is no electronic address to send the invoice to.",
+      "Customer TRN 100311740200004 does not contain exactly 15 digits starting with 1 and ending in 03; a TRN has 15 digits, starts with 1 and ends in 03. Without it there is no electronic address to send the invoice to.",
     );
   });
 

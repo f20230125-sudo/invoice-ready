@@ -1,6 +1,7 @@
-import { FIELDS, type FieldDef } from "./fields";
+import { FIELDS, requiredField, type FieldDef } from "./fields";
 import type { Computed } from "./compute";
-import { validRate } from "./money";
+import { lineNet, validRate } from "./money";
+import { UNITS } from "./units";
 
 // Is a draft ready to go out as a UAE electronic tax invoice? Every mandatory field must be present and well
 // formed, and the codes and arithmetic must follow the PINT AE rules. Each problem is one sentence that says
@@ -15,10 +16,9 @@ export interface Finding {
   line?: number;
 }
 
-// IBR-132-AE: 15 digits, starting with 1 and ending in 03 (UAE TRNs start with 100).
-const TRN = /^100\d{10}03$/;
+// IBR-132-AE: 15 digits, starting with 1 and ending in 03.
+const TRN = /^1\d{12}03$/;
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
-const CURRENCIES = new Set(["AED", "USD", "EUR", "GBP", "SAR", "INR", "QAR", "OMR", "KWD", "BHD", "JPY", "CNY"]);
 const TAX_CATEGORIES = new Set(["S", "Z", "E", "O", "AE", "N"]);
 const ID_TYPES = new Set(["TL", "EID", "PAS", "CD"]);
 const INVOICE_TYPES = new Set(["380", "480"]);
@@ -56,8 +56,8 @@ export function validate(c: Computed): Finding[] {
   // 1. Every mandatory field has a value.
   for (const f of FIELDS) {
     if (f.section === "Invoice line") {
-      for (const l of c.lines) if (!f.value(c, l)) add(f.n, "invoice", `Line ${l.n}: ${f.name.toLowerCase()} is missing.`, l.n);
-    } else if (!f.value(c)) {
+      for (const l of c.lines) if (requiredField(f.n, l.tax_category) && !f.value(c, l)) add(f.n, "invoice", `Line ${l.n}: ${f.name.toLowerCase()} is missing.`, l.n);
+    } else if (requiredField(f.n, c.subtotals[0]?.category) && !f.value(c)) {
       // An electronic address that is missing because the TRN is wrong is explained once, at the TRN.
       if ([11, 12, 16, 22, 23, 25].includes(f.n)) continue;
       add(f.n, where(f), `${f.name} is missing.`);
@@ -73,8 +73,15 @@ export function validate(c: Computed): Finding[] {
     add(6, "invoice", `Payment is due (${d.due_date}) before the invoice is issued (${d.issue_date}).`);
   }
   if (!INVOICE_TYPES.has(d.type_code)) add(3, "invoice", `Invoice type code ${d.type_code} is not allowed: use 380 (commercial invoice) or 480 (out of scope of tax).`);
-  if (d.currency && !CURRENCIES.has(d.currency)) add(4, "invoice", `Currency ${d.currency} is not a known ISO 4217 code.`);
+  // IBR-159-AE: foreign currencies need exchange rates and AED accounting amounts.
+  if (d.currency && d.currency !== "AED") add(4, "invoice", `Currency ${d.currency} is held because only AED is supported and exchange rates are not supported yet.`);
   if (!/^[01]{8}$/.test(d.transaction_flags)) add(5, "invoice", `Transaction type must be 8 positions of 0 or 1; it is "${d.transaction_flags}".`);
+  // IBR-007/116/137/138/142/157-AE: dependent fields and special tax handling are not represented.
+  if (/^[01]{8}$/.test(d.transaction_flags)) {
+    ["free trade zone", "deemed supply", "margin scheme", "summary invoice", "continuous supply", "agent billing", "e-commerce"].forEach((name, i) => {
+      if (d.transaction_flags[i] === "1") add(5, "invoice", `The ${name} flag is held because its dependent fields and tax handling are not supported yet.`);
+    });
+  }
   if (d.payment_means && !PAYMENT_MEANS.has(d.payment_means)) add(9, "invoice", `Payment means ${d.payment_means} is not a permitted UAE UNCL 4461 code (for example 30, credit transfer).`);
 
   const trnCheck = (trn: string | null, n: number, w: Where, who: string) => {
@@ -82,12 +89,15 @@ export function validate(c: Computed): Finding[] {
       add(n, w, `${who} has no TRN on file, so the invoice has no ${who.toLowerCase()} tax identifier and no electronic address (the TIN is the TRN's first 10 digits).`);
     } else if (!TRN.test(trn)) {
       const digits = trn.replace(/\D/g, "").length;
-      const shape = digits === 15 ? "is 15 digits but does not start with 100 and end in 03" : `has ${digits} digits`;
-      add(n, w, `${who} TRN ${trn} ${shape}; a TRN has 15 digits, starts with 100 and ends in 03. Without it there is no electronic address to send the invoice to.`);
+      const shape = digits === 15 ? "does not contain exactly 15 digits starting with 1 and ending in 03" : `has ${digits} digits`;
+      add(n, w, `${who} TRN ${trn} ${shape}; a TRN has 15 digits, starts with 1 and ends in 03. Without it there is no electronic address to send the invoice to.`);
     }
   };
   trnCheck(c.seller.trn, 15, "company", "Seller");
   if (c.buyer) trnCheck(c.buyer.trn, 24, "customer", "Customer");
+  // IBR-136-AE and IBR-180-AE: type 480 requires buyer registration and its type.
+  if (d.type_code === "480" && !c.buyer?.legal_id?.trim()) add(21, "customer", "Invoice type 480 requires a buyer legal registration identifier.");
+  if (d.type_code === "480" && !ID_TYPES.has(c.buyer?.legal_id_type ?? "")) add(21, "customer", "Invoice type 480 requires a buyer legal registration type of TL, EID, PAS or CD.");
   if (c.seller.legal_id_type && !ID_TYPES.has(c.seller.legal_id_type)) {
     add(14, "company", `Legal registration type ${c.seller.legal_id_type} must be TL, EID, PAS or CD.`);
   }
@@ -100,6 +110,11 @@ export function validate(c: Computed): Finding[] {
 
   // 3. Lines: codes, rates, and what the transaction flags imply.
   const exports = d.transaction_flags[7] === "1";
+  // IBR-057, IBR-CL-14 and IBR-128-AE: validate every supplied delivery address.
+  if (d.delivery) {
+    if (!COUNTRIES.has(d.delivery.country ?? "")) add(5, "invoice", "The delivery address needs a country code from the PINT AE country code list.");
+    if (d.delivery.country === "AE" && !EMIRATES.has(d.delivery.subdivision ?? "")) add(5, "invoice", "The UAE delivery address subdivision must be AUH, DXB, SHJ, UAQ, FUJ, AJM or RAK.");
+  }
   // IBR-152-AE: exports require an overseas delivery address.
   if (exports) {
     const a = d.delivery;
@@ -109,16 +124,23 @@ export function validate(c: Computed): Finding[] {
   }
   for (const l of c.lines) {
     if (!TAX_CATEGORIES.has(l.tax_category)) add(46, "invoice", `Line ${l.n}: tax category ${l.tax_category} is not one of S, Z, E, O, AE, N.`, l.n);
-    if (!validRate(l.tax_rate)) add(47, "invoice", `Line ${l.n}: tax rate must be a finite, nonnegative decimal percentage; it is "${l.tax_rate}".`, l.n);
+    if (requiredField(47, l.tax_category) && !validRate(l.tax_rate)) add(47, "invoice", `Line ${l.n}: tax rate must be a finite, nonnegative decimal percentage; it is "${l.tax_rate}".`, l.n);
     // ALIGNED-IBRP-E-05 and IBR-167-AE: hold E until reason codes and rate omission are supported.
     if (l.tax_category === "E") add(46, "invoice", `Line ${l.n}: exempt VAT (E) needs an exemption reason and category-specific XML, which are not supported yet.`, l.n);
+    // IBR-108-AE: N has special tax treatment that this writer does not implement.
+    if (l.tax_category === "N") add(46, "invoice", `Line ${l.n}: category N is held because its special VAT treatment is not supported yet.`, l.n);
+    // IBR-166-AE and IBR-174-AE: reverse charge requires classification and an item identifier.
+    if (l.tax_category === "AE") add(46, "invoice", `Line ${l.n}: reverse charge is held because goods or services classification and a standard item identifier under scheme 0160 are not supported yet.`, l.n);
     // IBR-122-AE: type 480 permits only E, O and Z categories.
     if (d.type_code === "480" && !["E", "O", "Z"].includes(l.tax_category)) add(46, "invoice", `Line ${l.n}: invoice type 480 only permits tax categories E, O or Z.`, l.n);
     if (l.tax_category === "S" && Number(l.tax_rate) !== 5) add(47, "invoice", `Line ${l.n}: standard rate (S) is 5% in the UAE, not ${l.tax_rate}%.`, l.n);
     if (["Z", "E", "O"].includes(l.tax_category) && Number(l.tax_rate) !== 0) add(47, "invoice", `Line ${l.n}: category ${l.tax_category} carries no VAT, but the rate is ${l.tax_rate}%.`, l.n);
-    if (l.qty <= 0) add(40, "invoice", `Line ${l.n}: quantity must be above zero.`, l.n);
+    if (!Number.isFinite(l.qty) || l.qty <= 0) add(40, "invoice", `Line ${l.n}: quantity must be finite and above zero.`, l.n);
+    // IBR-147-AE: an unrepresentable product must not reach XML as an invalid amount.
+    if (Number.isFinite(l.qty) && lineNet(l.price, l.qty) === null) add(42, "invoice", `Line ${l.n}: quantity times price exceeds the supported range of whole fils.`, l.n);
     if (l.price < 0) add(43, "invoice", `Line ${l.n}: the net price cannot be negative.`, l.n);
-    if (!/^[A-Z0-9]{2,3}$/.test(l.unit_code)) add(41, "invoice", `Line ${l.n}: unit ${l.unit_code} is not a UN/ECE Rec 20 code (H87 piece, C62 one).`, l.n);
+    // IBR-CL-23: shape alone does not establish unit-code membership.
+    if (!UNITS.has(l.unit_code)) add(41, "invoice", `Line ${l.n}: unit ${l.unit_code} is not a UN/ECE Rec 20/21 code (H87 piece, C62 one).`, l.n);
     if (exports && l.tax_category === "S") add(46, "invoice", `Line ${l.n}: the invoice is flagged as an export but this line charges 5% VAT; exports are normally zero-rated (Z).`, l.n);
   }
   return out;
@@ -129,7 +151,7 @@ export function fieldStatus(c: Computed, findings: Finding[]): Map<number, "ok" 
   const bad = new Set(findings.map((f) => f.field));
   return new Map(
     FIELDS.map((f) => {
-      const empty = f.section === "Invoice line" ? c.lines.some((l) => !f.value(c, l)) || c.lines.length === 0 : !f.value(c);
+      const empty = f.section === "Invoice line" ? c.lines.some((l) => requiredField(f.n, l.tax_category) && !f.value(c, l)) || c.lines.length === 0 : requiredField(f.n, c.subtotals[0]?.category) && !f.value(c);
       return [f.n, bad.has(f.n) || empty ? "problem" : "ok"];
     }),
   );

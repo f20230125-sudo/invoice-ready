@@ -1,4 +1,4 @@
-import { percentOf, toFils, validRate, type Fils } from "./money";
+import { lineNet, normalizedRate, percentOf, toFils, validRate, type Fils } from "./money";
 import type { Customer, InvoiceDraft, Party } from "./types";
 
 // Everything the electronic invoice states, computed once from the draft and the master data.
@@ -51,7 +51,7 @@ export function compute(draft: InvoiceDraft, seller: Party, customers: Customer[
   const buyer = customers.find((c) => c.code === draft.customer) ?? null;
   const lines = draft.lines.map((l, i) => {
     const price = toFils(l.unit_price);
-    const net = Math.round(price * l.qty);
+    const net = lineNet(price, l.qty) ?? 0; // Held drafts use a finite placeholder for read-back.
     // ALIGNED-IBRP-AE-09-AE: reverse-charge VAT is not charged to the buyer.
     const vat = l.tax_category === "AE" || !validRate(l.tax_rate) ? 0 : percentOf(net, l.tax_rate);
     return {
@@ -61,8 +61,10 @@ export function compute(draft: InvoiceDraft, seller: Party, customers: Customer[
   });
   const groups = new Map<string, TaxSubtotal>();
   for (const l of lines) {
-    const key = `${l.tax_category}|${l.tax_rate}`;
-    const g = groups.get(key) ?? { category: l.tax_category, rate: l.tax_rate, taxable: 0, tax: 0 };
+    // ALIGNED-IBRP-O-01/11-AE: O has one breakdown and no percentage.
+    const rate = l.tax_category === "O" ? "" : normalizedRate(l.tax_rate);
+    const key = `${l.tax_category}|${rate}`;
+    const g = groups.get(key) ?? { category: l.tax_category, rate, taxable: 0, tax: 0 };
     g.taxable += l.net;
     groups.set(key, g);
   }

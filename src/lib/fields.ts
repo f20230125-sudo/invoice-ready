@@ -21,6 +21,11 @@ const SUP = "AccountingSupplierParty/Party";
 const CUS = "AccountingCustomerParty/Party";
 const first = (c: Computed) => c.subtotals[0];
 
+/** ALIGNED-IBRP-O-05 and ALIGNED-IBRP-O-11-AE: O percentages must be absent. */
+export function requiredField(n: number, category?: string): boolean {
+  return !([38, 47].includes(n) && category === "O");
+}
+
 export const FIELDS: FieldDef[] = [
   { n: 1, name: "Invoice number", section: "Invoice details", term: "IBT-001", path: "ID", value: (c) => c.draft.id },
   { n: 2, name: "Invoice date", section: "Invoice details", term: "IBT-002", path: "IssueDate", value: (c) => c.draft.issue_date },

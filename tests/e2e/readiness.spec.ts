@@ -52,6 +52,57 @@ test("saving in a second tab keeps corrections made in the first", async ({ page
   await expect(page.locator(".lede")).toContainText("14 are ready");
 });
 
+test("a stale form submits only changed fields for the same customer", async ({ page, context }) => {
+  await page.evaluate(() => localStorage.setItem("invoice-ready:customer-fixes", JSON.stringify({ AWMS: { city: null } })));
+  await page.reload();
+  const second = await context.newPage();
+  await second.goto("/");
+  const firstRecord = page.locator(".records li", { hasText: "Al Waha Municipal Services" });
+  const secondRecord = second.locator(".records li", { hasText: "Al Waha Municipal Services" });
+  await firstRecord.getByRole("button", { name: "Fix the record" }).click();
+  await secondRecord.getByRole("button", { name: "Fix the record" }).click();
+  await secondRecord.getByLabel("City").fill("Abu Dhabi");
+  await firstRecord.getByLabel("TRN").fill("100311740200003");
+  await firstRecord.getByRole("button", { name: "Save the record" }).click();
+  await secondRecord.getByRole("button", { name: "Save the record" }).click();
+  expect(await second.evaluate(() => JSON.parse(localStorage.getItem("invoice-ready:customer-fixes")!))).toEqual({
+    AWMS: { city: "Abu Dhabi", trn: "100311740200003" },
+  });
+  await second.reload();
+  await expect(second.locator(".lede")).toContainText("12 are ready");
+});
+
+test("a stale tab cannot restore corrections removed in another tab", async ({ page, context }) => {
+  const awms = page.locator(".records li", { hasText: "Al Waha Municipal Services" });
+  await awms.getByRole("button", { name: "Fix the record" }).click();
+  await awms.getByLabel("TRN").fill("100311740200003");
+  await awms.getByRole("button", { name: "Save the record" }).click();
+  const second = await context.newPage();
+  // Keep this tab stale to test persisted state even before storage events are delivered.
+  await second.addInitScript(() => window.addEventListener("storage", (e) => e.stopImmediatePropagation(), true));
+  await second.goto("/");
+  const spac = second.locator(".records li", { hasText: "Seven Palms Academy" });
+  await spac.getByRole("button", { name: "Fix the record" }).click();
+  await spac.getByLabel("City").fill("Sharjah");
+  await page.getByRole("button", { name: "Undo the corrections" }).click();
+  await spac.getByRole("button", { name: "Save the record" }).click();
+  expect(await second.evaluate(() => JSON.parse(localStorage.getItem("invoice-ready:customer-fixes")!))).toEqual({ SPAC: { city: "Sharjah" } });
+  await second.reload();
+  await expect(second.locator(".lede")).toContainText("11 are ready");
+});
+
+test("corrections and undo synchronize across tabs without reload", async ({ page, context }) => {
+  const second = await context.newPage();
+  await second.goto("/");
+  const awms = page.locator(".records li", { hasText: "Al Waha Municipal Services" });
+  await awms.getByRole("button", { name: "Fix the record" }).click();
+  await awms.getByLabel("TRN").fill("100311740200003");
+  await awms.getByRole("button", { name: "Save the record" }).click();
+  await expect(second.locator(".lede")).toContainText("12 are ready");
+  await page.getByRole("button", { name: "Undo the corrections" }).click();
+  await expect(second.locator(".lede")).toContainText("9 are ready");
+});
+
 test("an invoice shows its 51 fields, the sum rules and its XML", async ({ page }) => {
   await page.getByRole("link", { name: "INV-2026-0001" }).click();
   await expect(page.locator(".fields h2")).toContainText("51 of 51");
